@@ -3,28 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录与注册</title>
+    <title>项目主页</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f6f8fa; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 8px; width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #d0d7de; }
-        h2 { text-align: center; color: #1f2328; margin-top: 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #d0d7de; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2da44e; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #2c974b; }
-        p { text-align: center; font-size: 14px; color: #57606a; }
-        a { color: #0969da; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f6f8fa; }
+        .card { background: white; padding: 30px; border-radius: 8px; width: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .page { display: none; }
+        .active { display: block; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #2ea44f; color: white; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>登录</h2>
-    <input type="text" placeholder="用户名或邮箱">
-    <input type="password" placeholder="密码">
-    <button>登录</button>
-    <p>没有账号？<a href="#">立即注册</a></p>
+<div class="card">
+    <div id="loginPage" class="page active">
+        <h2>登录</h2>
+        <input type="text" id="user" placeholder="用户名">
+        <input type="password" placeholder="密码">
+        <button onclick="login()">登录</button>
+        <p style="text-align:center">没有账号？<a href="#" onclick="showPage('registerPage')">注册</a></p>
+    </div>
+
+    <div id="registerPage" class="page">
+        <h2>注册</h2>
+        <input type="text" placeholder="设置用户名">
+        <input type="password" placeholder="设置密码">
+        <button onclick="showPage('loginPage')">提交注册</button>
+    </div>
+
+    <div id="mainPage" class="page">
+        <h2>欢迎回来</h2>
+        <p><strong>用户名：</strong> <span id="displayName"></span></p>
+        <p>状态：已登录</p>
+        <button style="background:#d73a49" onclick="showPage('loginPage')">退出登录</button>
+    </div>
 </div>
+
+<script>
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+    }
+    function login() {
+        const username = document.getElementById('user').value;
+        document.getElementById('displayName').innerText = username || "游客";
+        showPage('mainPage');
+    }
+</script>
 
 </body>
 </html>
