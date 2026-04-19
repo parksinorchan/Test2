@@ -3,40 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>项目主页</title>
+    <title>商户服务平台</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f6f8fa; }
-        .card { background: white; padding: 30px; border-radius: 8px; width: 300px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .page { display: none; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; }
+        .page { display: none; padding: 20px; }
         .active { display: block; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #2ea44f; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .grid-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-item { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; }
+        button { background: #007bff; color: white; border: none; font-weight: bold; }
+        .nav-btn { background: #6c757d; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="loginPage" class="page active">
-        <h2>登录</h2>
-        <input type="text" id="user" placeholder="用户名">
+<div id="loginPage" class="page active">
+    <div class="card">
+        <h2>商户登录</h2>
+        <input type="text" id="user" placeholder="商户账号">
         <input type="password" placeholder="密码">
         <button onclick="login()">登录</button>
-        <p style="text-align:center">没有账号？<a href="#" onclick="showPage('registerPage')">注册</a></p>
     </div>
+</div>
 
-    <div id="registerPage" class="page">
-        <h2>注册</h2>
-        <input type="text" placeholder="设置用户名">
-        <input type="password" placeholder="设置密码">
-        <button onclick="showPage('loginPage')">提交注册</button>
+<div id="mainPage" class="page">
+    <div class="card">
+        <h3>今日交易概览</h3>
+        <div class="grid-sum">
+            <div class="stat-item"><small>总交易额</small><br><strong>¥12,450.00</strong></div>
+            <div class="stat-item"><small>交易笔数</small><br><strong>128</strong></div>
+        </div>
     </div>
-
-    <div id="mainPage" class="page">
-        <h2>欢迎回来</h2>
-        <p><strong>用户名：</strong> <span id="displayName"></span></p>
-        <p>状态：已登录</p>
-        <button style="background:#d73a49" onclick="showPage('loginPage')">退出登录</button>
+    <div class="card">
+        <h4>近期流水</h4>
+        <p style="font-size: 14px; color: #666;">2026-04-19 10:20 | +¥200.00 | 成功</p>
+        <p style="font-size: 14px; color: #666;">2026-04-19 09:15 | +¥50.00 | 成功</p>
     </div>
+    <button class="nav-btn" onclick="showPage('loginPage')">退出登录</button>
 </div>
 
 <script>
@@ -46,10 +50,8 @@
     }
     function login() {
         const username = document.getElementById('user').value;
-        document.getElementById('displayName').innerText = username || "游客";
         showPage('mainPage');
     }
 </script>
-
 </body>
 </html>
