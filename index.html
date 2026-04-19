@@ -1,73 +1,258 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商户经营大盘</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding: 15px; }
-        .page { display: none; }
-        .active { display: block; }
-        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .grid-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-item { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
-        .stat-val { font-size: 1.2em; font-weight: bold; color: #007bff; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box;}
-        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商户经营大盘（升级版）</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: -apple-system, sans-serif;
+    background: #f5f7fb;
+    margin: 0;
+    padding: 16px;
+}
+
+/* 页面结构 */
+.page { display: none; }
+.active { display: block; }
+
+/* 卡片 */
+.card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* KPI */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.kpi {
+    background: #f8faff;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.kpi .val {
+    font-size: 20px;
+    font-weight: bold;
+    color: #1677ff;
+}
+
+/* 两列布局 */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* 表格 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+}
+
+th {
+    text-align: left;
+    color: #666;
+}
+
+/* 登录 */
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+
+button {
+    background: #1677ff;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+.small {
+    font-size: 12px;
+    color: #888;
+}
+</style>
 </head>
+
 <body>
 
+<!-- 登录 -->
 <div id="loginPage" class="page active">
     <div class="card">
-        <h2>商户登录</h2>
-        <input type="text" id="user" placeholder="商户账号">
+        <h2>商户经营系统登录</h2>
+        <input type="text" placeholder="商户账号">
         <input type="password" placeholder="密码">
-        <button onclick="login()">登录</button>
+        <button onclick="login()">进入经营大盘</button>
+        <div class="small">支持多门店 / 总分管理 / 收银分析</div>
     </div>
 </div>
 
+<!-- 主面板 -->
 <div id="mainPage" class="page">
-    <div class="grid-sum">
-        <div class="stat-item"><div style="font-size: 0.8em;">今日交易额</div><div class="stat-val">¥88,290</div></div>
-        <div class="stat-item"><div style="font-size: 0.8em;">客单价</div><div class="stat-val">¥128</div></div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div>今日总销售</div>
+            <div class="val">¥128,450</div>
+        </div>
+        <div class="kpi">
+            <div>门店数</div>
+            <div class="val">6</div>
+        </div>
+        <div class="kpi">
+            <div>活跃收银点</div>
+            <div class="val">18</div>
+        </div>
+        <div class="kpi">
+            <div>人效(单/人)</div>
+            <div class="val">32.4</div>
+        </div>
     </div>
-    
+
+    <!-- 趋势 -->
     <div class="card">
-        <h4>今日交易走势</h4>
-        <canvas id="trendChart"></canvas>
+        <h4>📈 7日销售趋势</h4>
+        <canvas id="weekChart"></canvas>
     </div>
-    
-    <button style="background:#6c757d" onclick="showPage('loginPage')">退出登录</button>
+
+    <div class="grid-2">
+        <div class="card">
+            <h4>⏱ 今日时段交易趋势</h4>
+            <canvas id="dayChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h4>🏬 门店销售对比</h4>
+            <canvas id="storeChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 收银点 -->
+    <div class="card">
+        <h4>💳 收银点表现</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>收银点</th>
+                    <th>门店</th>
+                    <th>交易额</th>
+                    <th>单量</th>
+                    <th>效率</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A-01</td>
+                    <td>北京一店</td>
+                    <td>¥32,000</td>
+                    <td>210</td>
+                    <td>优</td>
+                </tr>
+                <tr>
+                    <td>B-02</td>
+                    <td>上海二店</td>
+                    <td>¥28,500</td>
+                    <td>180</td>
+                    <td>良</td>
+                </tr>
+                <tr>
+                    <td>C-03</td>
+                    <td>广州三店</td>
+                    <td>¥21,200</td>
+                    <td>150</td>
+                    <td>中</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button style="background:#666" onclick="logout()">退出登录</button>
 </div>
 
 <script>
-    function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-    }
-    
-    function login() {
-        showPage('mainPage');
-        // 初始化图表（放在 login 之后触发，确保 DOM 已渲染）
-        const ctx = document.getElementById('trendChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['09:00', '11:00', '13:00', '15:00', '17:00'],
-                datasets: [{
-                    label: '实时交易额 (元)',
-                    data: [5000, 12000, 8000, 15000, 22000],
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { responsive: true }
-        });
-    }
+
+function login() {
+    show('mainPage');
+    renderCharts();
+}
+
+function logout() {
+    show('loginPage');
+}
+
+function show(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+/* 图表统一初始化 */
+function renderCharts() {
+
+    // 7日趋势
+    new Chart(document.getElementById('weekChart'), {
+        type: 'line',
+        data: {
+            labels: ['周一','周二','周三','周四','周五','周六','周日'],
+            datasets: [{
+                label: '销售额',
+                data: [82000, 90000, 76000, 110000, 125000, 142000, 128450],
+                borderColor: '#1677ff',
+                fill: true,
+                tension: 0.3
+            }]
+        }
+    });
+
+    // 当日趋势
+    new Chart(document.getElementById('dayChart'), {
+        type: 'line',
+        data: {
+            labels: ['09','11','13','15','17','19','21'],
+            datasets: [{
+                label: '交易额',
+                data: [3000, 9000, 12000, 18000, 24000, 22000, 15000],
+                borderColor: '#52c41a',
+                fill: true
+            }]
+        }
+    });
+
+    // 门店对比
+    new Chart(document.getElementById('storeChart'), {
+        type: 'bar',
+        data: {
+            labels: ['北京一店','上海二店','广州三店','深圳四店'],
+            datasets: [{
+                label: '门店销售',
+                data: [42000, 38000, 29000, 21500],
+                backgroundColor: '#1677ff'
+            }]
+        }
+    });
+}
+
 </script>
 
 </body>
