@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商户服务平台</title>
+    <title>商户经营大盘</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; }
-        .page { display: none; padding: 20px; }
+        body { font-family: -apple-system, sans-serif; background: #f4f7f9; margin: 0; padding: 15px; }
+        .page { display: none; }
         .active { display: block; }
         .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .grid-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-item { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; }
-        button { background: #007bff; color: white; border: none; font-weight: bold; }
-        .nav-btn { background: #6c757d; margin-top: 20px; }
+        .stat-val { font-size: 1.2em; font-weight: bold; color: #007bff; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ddd; box-sizing: border-box;}
+        button { background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -28,19 +29,17 @@
 </div>
 
 <div id="mainPage" class="page">
-    <div class="card">
-        <h3>今日交易概览</h3>
-        <div class="grid-sum">
-            <div class="stat-item"><small>总交易额</small><br><strong>¥12,450.00</strong></div>
-            <div class="stat-item"><small>交易笔数</small><br><strong>128</strong></div>
-        </div>
+    <div class="grid-sum">
+        <div class="stat-item"><div style="font-size: 0.8em;">今日交易额</div><div class="stat-val">¥88,290</div></div>
+        <div class="stat-item"><div style="font-size: 0.8em;">客单价</div><div class="stat-val">¥128</div></div>
     </div>
+    
     <div class="card">
-        <h4>近期流水</h4>
-        <p style="font-size: 14px; color: #666;">2026-04-19 10:20 | +¥200.00 | 成功</p>
-        <p style="font-size: 14px; color: #666;">2026-04-19 09:15 | +¥50.00 | 成功</p>
+        <h4>今日交易走势</h4>
+        <canvas id="trendChart"></canvas>
     </div>
-    <button class="nav-btn" onclick="showPage('loginPage')">退出登录</button>
+    
+    <button style="background:#6c757d" onclick="showPage('loginPage')">退出登录</button>
 </div>
 
 <script>
@@ -48,10 +47,28 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
     }
+    
     function login() {
-        const username = document.getElementById('user').value;
         showPage('mainPage');
+        // 初始化图表（放在 login 之后触发，确保 DOM 已渲染）
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['09:00', '11:00', '13:00', '15:00', '17:00'],
+                datasets: [{
+                    label: '实时交易额 (元)',
+                    data: [5000, 12000, 8000, 15000, 22000],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true }
+        });
     }
 </script>
+
 </body>
 </html>
