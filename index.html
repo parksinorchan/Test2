@@ -11,24 +11,19 @@
         .active { display: block; }
         .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         
-        /* KPI 优化布局 */
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-        .kpi { background: #f8faff; border-radius: 10px; padding: 10px 4px; text-align: center; }
-        .kpi div:first-child { font-size: 10px; color: #666; margin-bottom: 4px; }
-        .kpi .val { font-size: 13px; font-weight: bold; color: #1677ff; }
+        /* 强制 KPI 容器布局 */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .kpi { background: #f8faff; border-radius: 8px; padding: 8px 2px; text-align: center; }
+        .kpi div:first-child { font-size: 9px; color: #777; margin-bottom: 2px; white-space: nowrap; }
+        .kpi .val { font-size: 12px; font-weight: bold; color: #1677ff; }
 
-        /* 图表容器 */
-        .chart-container { position: relative; height: 180px; width: 100%; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-        /* 表格 */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: #888; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }
-        td { padding: 8px 0; font-size: 13px; border-bottom: 1px solid #eee; }
-
-        /* 登录及按钮 */
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #1677ff; color: white; border: none; font-weight: bold; }
+        /* 修复图表容器溢出 */
+        .chart-container { position: relative; height: 140px; width: 100%; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* 修复表格溢出 */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 8px 2px; text-align: center; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -36,47 +31,36 @@
 <div id="loginPage" class="page active">
     <div class="card">
         <h2>系统登录</h2>
-        <input type="text" placeholder="账号">
-        <input type="password" placeholder="密码">
-        <button onclick="login()">进入经营大盘</button>
+        <input type="text" id="user" placeholder="账号" style="width:100%; padding:10px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
+        <button onclick="login()" style="width:100%; padding:12px; background:#1677ff; color:white; border:none; border-radius:8px;">进入经营大盘</button>
     </div>
 </div>
 
 <div id="mainPage" class="page">
     <div class="kpi-grid">
-        <div class="kpi"><div>销售额</div><div class="val">¥128k</div></div>
+        <div class="kpi"><div>销售额</div><div class="val">128k</div></div>
         <div class="kpi"><div>门店</div><div class="val">6</div></div>
         <div class="kpi"><div>收银点</div><div class="val">18</div></div>
         <div class="kpi"><div>人效</div><div class="val">32.4</div></div>
     </div>
 
     <div class="card">
-        <h4>📈 7日销售趋势</h4>
+        <h4 style="margin:0 0 10px 0;">📈 7日销售趋势</h4>
         <div class="chart-container"><canvas id="weekChart"></canvas></div>
     </div>
 
     <div class="grid-2">
         <div class="card">
-            <h4>⏱ 时段交易</h4>
+            <h4 style="margin:0 0 10px 0; font-size: 13px;">⏱ 时段交易</h4>
             <div class="chart-container"><canvas id="dayChart"></canvas></div>
         </div>
         <div class="card">
-            <h4>🏬 门店对比</h4>
+            <h4 style="margin:0 0 10px 0; font-size: 13px;">🏬 门店对比</h4>
             <div class="chart-container"><canvas id="storeChart"></canvas></div>
         </div>
     </div>
 
-    <div class="card">
-        <h4>💳 收银点表现</h4>
-        <table>
-            <thead><tr><th>收银点</th><th>门店</th><th>额</th><th>量</th><th>效</th></tr></thead>
-            <tbody>
-                <tr><td>A-01</td><td>北京一</td><td>32k</td><td>210</td><td>优</td></tr>
-                <tr><td>B-02</td><td>上海二</td><td>28k</td><td>180</td><td>良</td></tr>
-            </tbody>
-        </table>
-    </div>
-    <button style="background:#666" onclick="show('loginPage')">退出登录</button>
+    <button style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:8px;" onclick="show('loginPage')">退出</button>
 </div>
 
 <script>
@@ -84,22 +68,24 @@ function show(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 }
-
 function login() {
     show('mainPage');
-    render();
-}
-
-function render() {
-    const common = { responsive: true, maintainAspectRatio: false };
+    const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+    
     new Chart(document.getElementById('weekChart'), {
-        type: 'line', data: { labels: ['周一','周二','周三','周四','周五','周六','周日'], datasets: [{ data: [80,90,76,110,125,142,128], borderColor: '#1677ff', fill: true }] }, options: common
+        type: 'line', 
+        data: { labels: ['周一','周二','周三','周四','周五','周六','周日'], datasets: [{ label: '销售', data: [80,90,76,110,125,142,128], borderColor: '#1677ff', tension: 0.3 }] }, 
+        options: common
     });
     new Chart(document.getElementById('dayChart'), {
-        type: 'line', data: { labels: ['9','13','17','21'], datasets: [{ data: [3,12,24,15], borderColor: '#52c41a' }] }, options: common
+        type: 'line', 
+        data: { labels: ['9','13','17','21'], datasets: [{ label: '交易', data: [3,12,24,15], borderColor: '#52c41a', tension: 0.3 }] }, 
+        options: common
     });
     new Chart(document.getElementById('storeChart'), {
-        type: 'bar', data: { labels: ['北京','上海','广州','深圳'], datasets: [{ data: [42,38,29,21], backgroundColor: '#1677ff' }] }, options: common
+        type: 'bar', 
+        data: { labels: ['北京','上海','广州','深圳'], datasets: [{ label: '门店', data: [42,38,29,21], backgroundColor: '#1677ff' }] }, 
+        options: common
     });
 }
 </script>
