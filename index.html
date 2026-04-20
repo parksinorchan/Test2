@@ -2,92 +2,126 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>商户经营大盘</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商户入驻调测版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fb; margin: 0; padding: 12px; }
-        .page { display: none; }
-        .active { display: block; }
-        .card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* 强制 KPI 容器布局 */
-        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
-        .kpi { background: #f8faff; border-radius: 8px; padding: 8px 2px; text-align: center; }
-        .kpi div:first-child { font-size: 9px; color: #777; margin-bottom: 2px; white-space: nowrap; }
-        .kpi .val { font-size: 12px; font-weight: bold; color: #1677ff; }
-
-        /* 修复图表容器溢出 */
-        .chart-container { position: relative; height: 140px; width: 100%; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        
-        /* 修复表格溢出 */
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 8px 2px; text-align: center; border-bottom: 1px solid #eee; }
+        .hidden { display: none; }
+        .active-tab { color: #2563eb; border-bottom: 2px solid #2563eb; }
+        /* 调试面板样式 */
+        #debug-panel { transition: transform 0.3s ease-in-out; }
+        .panel-hidden { transform: translateX(100%); }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-900">
 
-<div id="loginPage" class="page active">
-    <div class="card">
-        <h2>系统登录</h2>
-        <input type="text" id="user" placeholder="账号" style="width:100%; padding:10px; margin:8px 0; border:1px solid #ddd; border-radius:8px;">
-        <button onclick="login()" style="width:100%; padding:12px; background:#1677ff; color:white; border:none; border-radius:8px;">进入经营大盘</button>
-    </div>
-</div>
-
-<div id="mainPage" class="page">
-    <div class="kpi-grid">
-        <div class="kpi"><div>销售额</div><div class="val">128k</div></div>
-        <div class="kpi"><div>门店</div><div class="val">6</div></div>
-        <div class="kpi"><div>收银点</div><div class="val">18</div></div>
-        <div class="kpi"><div>人效</div><div class="val">32.4</div></div>
-    </div>
-
-    <div class="card">
-        <h4 style="margin:0 0 10px 0;">📈 7日销售趋势</h4>
-        <div class="chart-container"><canvas id="weekChart"></canvas></div>
-    </div>
-
-    <div class="grid-2">
-        <div class="card">
-            <h4 style="margin:0 0 10px 0; font-size: 13px;">⏱ 时段交易</h4>
-            <div class="chart-container"><canvas id="dayChart"></canvas></div>
+    <div id="app-container">
         </div>
-        <div class="card">
-            <h4 style="margin:0 0 10px 0; font-size: 13px;">🏬 门店对比</h4>
-            <div class="chart-container"><canvas id="storeChart"></canvas></div>
+
+    <div id="debug-trigger" onclick="toggleDebug()" class="fixed right-0 top-1/2 -translate-y-1/2 bg-red-500 text-white p-2 rounded-l-lg shadow-lg z-[100] cursor-pointer text-xs">
+        <i class="fas fa-bug"></i> 调测
+    </div>
+
+    <div id="debug-panel" class="fixed right-0 top-0 w-64 h-full bg-white shadow-2xl z-[101] p-4 panel-hidden overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold">Mock 参数调测</h3>
+            <button onclick="toggleDebug()" class="text-gray-400">&times;</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">接口返回状态 (code)</label>
+                <input type="number" id="mock-code" class="w-full border p-1 text-sm rounded" value="200">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">自定义提示消息 (msg)</label>
+                <input type="text" id="mock-msg" class="w-full border p-1 text-sm rounded" value="提交成功">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">模拟网络延迟 (ms)</label>
+                <input type="number" id="mock-delay" class="w-full border p-1 text-sm rounded" value="500">
+            </div>
+            <button onclick="saveMockConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm">更新 Mock 配置</button>
+        </div>
+        
+        <div class="mt-8 text-[10px] text-gray-400">
+            * 修改后点击提交按钮，前端将拦截请求并返回上方配置的内容。
         </div>
     </div>
 
-    <button style="width:100%; padding:10px; background:#666; color:white; border:none; border-radius:8px;" onclick="show('loginPage')">退出</button>
-</div>
+    <div id="page-register" class="p-6">
+        <h1 class="text-xl font-bold mb-6">注册商户</h1>
+        <button id="submit-reg" class="w-full bg-blue-600 text-white py-3 rounded-xl">注册并进件</button>
+    </div>
 
-<script>
-function show(id) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-function login() {
-    show('mainPage');
-    const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-    
-    new Chart(document.getElementById('weekChart'), {
-        type: 'line', 
-        data: { labels: ['周一','周二','周三','周四','周五','周六','周日'], datasets: [{ label: '销售', data: [80,90,76,110,125,142,128], borderColor: '#1677ff', tension: 0.3 }] }, 
-        options: common
-    });
-    new Chart(document.getElementById('dayChart'), {
-        type: 'line', 
-        data: { labels: ['9','13','17','21'], datasets: [{ label: '交易', data: [3,12,24,15], borderColor: '#52c41a', tension: 0.3 }] }, 
-        options: common
-    });
-    new Chart(document.getElementById('storeChart'), {
-        type: 'bar', 
-        data: { labels: ['北京','上海','广州','深圳'], datasets: [{ label: '门店', data: [42,38,29,21], backgroundColor: '#1677ff' }] }, 
-        options: common
-    });
-}
-</script>
+    <script>
+        /**
+         * 1. 后端 Mock 服务模拟器
+         */
+        const MockService = {
+            // 默认配置
+            config: {
+                code: 200,
+                msg: "操作成功",
+                data: { merchantId: "M88899" },
+                delay: 500
+            },
+
+            // 模拟异步 API 请求
+            async post(url, payload) {
+                console.log(`%c[Mock 请求] URL: ${url}`, "color: #2563eb; font-weight: bold", payload);
+                
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        if (this.config.code === 200) {
+                            resolve(this.config);
+                        } else {
+                            reject(this.config);
+                        }
+                    }, this.config.delay);
+                });
+            }
+        };
+
+        /**
+         * 2. 调测面板逻辑
+         */
+        function toggleDebug() {
+            document.getElementById('debug-panel').classList.toggle('panel-hidden');
+        }
+
+        function saveMockConfig() {
+            MockService.config.code = parseInt(document.getElementById('mock-code').value);
+            MockService.config.msg = document.getElementById('mock-msg').value;
+            MockService.config.delay = parseInt(document.getElementById('mock-delay').value);
+            alert('Mock 配置已更新，下次请求生效');
+        }
+
+        /**
+         * 3. 业务逻辑与 API 调测对接
+         */
+        document.getElementById('submit-reg').onclick = async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerText = "提交中...";
+
+            try {
+                // 使用 MockService 替代真实的 fetch/axios
+                const response = await MockService.post('/api/register', { phone: '138...' });
+                
+                alert(`接口返回结果：\n状态码：${response.code}\n消息：${response.msg}`);
+                
+                if(response.code === 200) {
+                    // 跳转逻辑...
+                }
+            } catch (err) {
+                alert(`请求失败 (Error ${err.code}): ${err.msg}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "注册并进件";
+            }
+        };
+    </script>
 </body>
 </html>
